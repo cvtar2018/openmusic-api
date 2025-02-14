@@ -12,11 +12,11 @@
 
 [x] define app endpoint: server.js, create a simple http server, then test run
 
-[ ] define plugin and register in Hapi Server
+[x] define plugin and register in Hapi Server
 
-[ ] define routes for albums and songs
+[x] define routes for albums and songs
 
-[ ] create database and user priviledges
+[x] create database and user priviledges
 
 [ ] implement postgres database into the app, create tables albums and songs using migrate technique
 
