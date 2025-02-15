@@ -25,3 +25,7 @@
 [ ] exceptions, error handling, and mapping response
 
 [ ] testing OpenMusic app: unit testing
+
+[ ] optional: get album with songs
+
+[ ] optional: parameterized query

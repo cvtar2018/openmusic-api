@@ -6,12 +6,14 @@ const albums = require('./api/albums');
 const songs = require('./api/songs');
 const SongsValidator = require('./validator/songs');
 const AlbumsValidator = require('./validator/albums');
-// const NotesService = require('./services/postgres/NotesService');
-// const NotesValidator = require('./validator/notes');
-// const ClientError = require('./exceptions/ClientError');
+const AlbumsService = require('./services/postgres/AlbumsService');
+const SongsService = require('./services/postgres/SongsService');
+const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
   // const notesService = new NotesService();
+  const albumsService = new AlbumsService();
+  const songsService = new SongsService();
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,

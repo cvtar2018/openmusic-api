@@ -20,7 +20,7 @@ exports.up = (pgm) => {
       notNull: true,
     },
     year: {
-      type: 'TEXT',
+      type: 'INTEGER',
       notNull: true,
     },
     genre: {
@@ -32,13 +32,8 @@ exports.up = (pgm) => {
       notNull: true,
     },
     duration: {
-      type: 'TEXT',
-      notNull: false,
-    },
-    album_id: {
-      type: 'VARCHAR(50)',
-      notNull: false,
-      references: '"albums"',
+      type: 'INTEGER',
+      allowNull: true,
     },
   });
 };

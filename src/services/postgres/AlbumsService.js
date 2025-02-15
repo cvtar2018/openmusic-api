@@ -22,6 +22,8 @@ class AlbumsService {
     if (!result.rows[0].id) {
       throw new InvariantError();
     }
+
+    return result.rows[0].id;
   }
 
   async getAlbumById(id) {
@@ -30,16 +32,18 @@ class AlbumsService {
       values: [id],
     };
 
-    const result = await this._poll.query(query);
+    const result = await this._pool.query(query);
 
     if (!result.rows.length) {
       throw new NotFoundError('Album id was not found');
     }
+
+    return result.rows[0];
   }
 
   async editAlbumById(id, { name, year }) {
     const query = {
-      text: 'UPDATE notes SET name = $1, year = $2 WHERE id = $3 RETURNING id',
+      text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id],
     };
 
@@ -52,7 +56,7 @@ class AlbumsService {
 
   async deleteAlbumById(id) {
     const query = {
-      text: 'DELETE FROM notes WHERE id = $1 RETURNING id',
+      text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
       values: [id],
     };
 
