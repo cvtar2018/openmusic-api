@@ -1,7 +1,11 @@
+const autoBind = require('auto-bind');
+
 class AlbumsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
+
+    autoBind(this);
   }
 
   async postAlbumHandler(request, h) {
@@ -13,7 +17,7 @@ class AlbumsHandler {
     const response = h.response({
       status: 'success',
       data: {
-        albumId: albumId,
+        albumId,
       },
     });
     response.code(201);
@@ -22,6 +26,7 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request) {
     const { id } = request.params;
+
     const album = await this._service.getAlbumById(id);
 
     return {

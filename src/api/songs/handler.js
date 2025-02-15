@@ -1,7 +1,11 @@
+const autoBind = require('auto-bind');
+
 class SongsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
+
+    autoBind(this);
   }
 
   async postSongHandler(request, h) {
@@ -13,7 +17,7 @@ class SongsHandler {
     const response = h.response({
       status: 'success',
       data: {
-        songId: songId,
+        songId,
       },
     });
     response.code(201);
@@ -32,7 +36,8 @@ class SongsHandler {
 
   async getSongByIdHandler(request) {
     const { id } = request.params;
-    const song = await this._service.getSongByIdHandler(id);
+    console.log(id);
+    const song = await this._service.getSongById(id);
 
     return {
       status: 'success',
@@ -53,14 +58,14 @@ class SongsHandler {
     };
   }
 
-  async deleteSongbyIdHandler(request) {
+  async deleteSongByIdHandler(request) {
     const { id } = request.params;
 
-    await this._service.deleteSongbyIdHandler(id);
+    await this._service.deleteSongById(id);
 
     return {
-      status: 'message',
-      message: 'Song has been successfully deleted',
+      status: 'success',
+      message: 'song has successfully been deleted',
     };
   }
 }
