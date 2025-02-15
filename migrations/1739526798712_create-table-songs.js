@@ -15,11 +15,6 @@ exports.up = (pgm) => {
       type: 'VARCHAR(50)',
       primaryKey: true,
     },
-    album_id: {
-      type: 'VARCHAR(50)',
-      notNull: false,
-      references: '"albums"',
-    },
     title: {
       type: 'TEXT',
       notNull: true,
@@ -39,6 +34,11 @@ exports.up = (pgm) => {
     duration: {
       type: 'TEXT',
       notNull: false,
+    },
+    album_id: {
+      type: 'VARCHAR(50)',
+      notNull: false,
+      references: '"albums"',
     },
   });
 };
