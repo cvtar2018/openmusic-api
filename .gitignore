@@ -1,5 +1,5 @@
 node_modules
-notes-api-web-server.pem
+openmusic-api-web-server.pem
 .env
 .prod.env
 .DS_Store
