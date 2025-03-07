@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
+const Jwt = require('@hapi/jwt');
 
 // songs
 const songs = require('./api/songs');
@@ -12,6 +13,11 @@ const SongsValidator = require('./validator/songs');
 const albums = require('./api/albums');
 const AlbumsService = require('./services/postgres/AlbumsService');
 const AlbumsValidator = require('./validator/albums');
+
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+const PlaylistsValidator = require('./validator/playlists');
 
 // users
 const users = require('./api/users');
@@ -27,9 +33,9 @@ const AuthenticationsValidator = require('./validator/authentications');
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
-  // const notesService = new NotesService();
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
+  const playlistsService = new PlaylistsService(songsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
 
@@ -41,6 +47,30 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  // external plugin registration
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  // define the JWT auth strategy
+  server.auth.strategy('openmusic_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
   });
 
   await server.register([
@@ -72,6 +102,13 @@ const init = async () => {
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistsValidator,
       },
     },
   ]);
