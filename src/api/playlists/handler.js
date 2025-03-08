@@ -102,6 +102,21 @@ class PlaylistsHandler {
       message: 'Playlist berhasil dihapus',
     };
   }
+
+  async getPlaylistActivitiesHandler(request) {
+    const { id: playlistId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    const result = await this._service.getPlaylistActivities(playlistId, credentialId);
+
+    return {
+      status: 'success',
+      data: {
+        playlistId: playlistId,
+        activities: result,
+      },
+    };
+  }
 }
 
 module.exports = PlaylistsHandler;
