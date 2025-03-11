@@ -45,7 +45,7 @@ class SongsHandler {
 
   async getSongByIdHandler(request) {
     const { id } = request.params;
-    console.log(id);
+
     const song = await this._service.getSongById(id);
 
     return {

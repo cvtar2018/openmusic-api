@@ -34,7 +34,7 @@ exports.up = (pgm) => {
   pgm.addConstraint(
     'playlist_collaborations',
     'fk_playlist_collaborations.playlist_id_playlists.id',
-    'FOREIGN KEY(playlist_id) REFERENCES playlist(id) ON DELETE CASCADE'
+    'FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE'
   );
   pgm.addConstraint(
     'playlist_collaborations',
