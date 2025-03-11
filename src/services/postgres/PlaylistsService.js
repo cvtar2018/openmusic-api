@@ -6,13 +6,13 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistsService {
-  constructor(songsService) {
+  constructor(songsService, collaborationsService) {
     this._pool = new Pool();
     this._songsService = songsService;
+    this._collaborationsService = collaborationsService;
   }
 
   async addPlaylist({ name, owner }) {
-    console.log(`name: ${name}, owner: ${owner}`);
     const id = `playlist-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO playlists VALUES($1, $2, $3) RETURNING id',
@@ -28,14 +28,14 @@ class PlaylistsService {
     return result.rows[0].id;
   }
 
-  async getPlaylists(owner) {
+  async getPlaylists(id) {
     const query = {
       text: `SELECT playlists.id, playlists.name, users.username
             FROM playlists
-            LEFT JOIN users
-            ON users.id = playlists.owner
-            WHERE playlists.owner = $1`,
-      values: [owner],
+            LEFT JOIN users ON users.id = playlists.owner
+            LEFT JOIN playlist_collaborations pc ON pc.playlist_id = playlists.id 
+            WHERE playlists.owner = $1 OR pc.user_id = $1`,
+      values: [id],
     };
 
     const result = await this._pool.query(query);
@@ -44,7 +44,6 @@ class PlaylistsService {
   }
 
   async addSongToPlaylist(playlistId, songId, credentialId) {
-    await this.verifyPlaylistOwner(playlistId, credentialId);
     await this._songsService.getSongById(songId);
 
     const query = {
@@ -53,7 +52,6 @@ class PlaylistsService {
     };
 
     const result = await this._pool.query(query);
-    console.log(result);
 
     if (!result.rows[0].playlist_id) {
       throw new InvariantError('Gagal menambahan lagu ke playlist');
@@ -62,10 +60,7 @@ class PlaylistsService {
     return result.rows[0].id;
   }
 
-  async getPlaylistById(playlistId, credentialId) {
-    // console.log(`playlistId: ${playlistId} || songId: ${songId} || userId: ${credentialId}`);
-
-    // check dulu kalo playlist dengan id yang diberikan exist gaes
+  async checkPlaylistExist(playlistId) {
     const query = {
       text: 'SELECT id FROM playlists WHERE id = $1',
       values: [playlistId],
@@ -74,8 +69,12 @@ class PlaylistsService {
     if (!playlistCheck.rows.length) {
       throw new NotFoundError('id playlist tidak ditemukan');
     }
+  }
 
-    await this.verifyPlaylistOwner(playlistId, credentialId);
+  async getPlaylistById(playlistId) {
+    // await this.checkPlaylistExist(playlistId);
+
+    // await this.verifyPlaylistOwner(playlistId, credentialId);
 
     const playlistQuery = {
       text: `SELECT playlists.id, playlists.name, users.username
@@ -112,9 +111,6 @@ class PlaylistsService {
   }
 
   async deleteSongFromPlaylist(playlistId, songId, credentialId) {
-    console.log(`playlistId: ${playlistId} || songId: ${songId} || userId: ${credentialId}`);
-    await this.verifyPlaylistOwner(playlistId, credentialId);
-
     const query = {
       text: 'DELETE FROM playlist_songs WHERE song_id = $1 RETURNING song_id',
       values: [songId],
@@ -143,24 +139,47 @@ class PlaylistsService {
     }
   }
 
+  // this line is actively being worked on
   async verifyPlaylistOwner(id, owner) {
     console.log(`verifying playlist owner >>>>>>>>> owner: ${owner}`);
 
     const query = {
-      text: 'SELECT * FROM playlists WHERE id = $1 AND owner = $2',
-      values: [id, owner],
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [id],
     };
+
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const playlist = result.rows[0];
+
+    if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationsService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw error;
+      }
     }
   }
 
   async addActivityToPlaylist(playlistId, songId, credentialId, action) {
     const activityId = `act-${nanoid(16)}`;
     const time = new Date().toISOString();
-    console.log(time);
+
     const addActivityQuery = {
       text: 'INSERT INTO playlist_activities VALUES($1, $2, $3, $4, $5, $6) RETURNING id',
       values: [activityId, playlistId, songId, credentialId, action, time],

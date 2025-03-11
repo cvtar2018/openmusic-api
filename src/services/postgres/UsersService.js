@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 const InvariantError = require('../../exceptions/InvariantError');
-// const NotFoundError = require('../../exceptions/NotFoundError');
+const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthenticationError = require('../../exceptions/AuthenticationError');
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
@@ -46,19 +46,19 @@ class UsersServices {
     }
   }
 
-  // async getUserById(userId) {
-  //   const query = {
-  //     text: 'SELECT id, username, fullname FROM users WHERE id = $1',
-  //     values: [userId],
-  //   };
-  //   const result = await this._pool.query(query);
+  async getUserById(userId) {
+    const query = {
+      text: 'SELECT id, username, fullname FROM users WHERE id = $1',
+      values: [userId],
+    };
+    const result = await this._pool.query(query);
 
-  //   if (!result.rows.length) {
-  //     throw new NotFoundError('User tidak ditemukan');
-  //   }
+    if (!result.rows.length) {
+      throw new NotFoundError('User tidak ditemukan');
+    }
 
-  //   return result.rows[0];
-  // }
+    return result.rows[0];
+  }
 
   async verifyUserCredential(username, password) {
     const query = {
@@ -82,14 +82,14 @@ class UsersServices {
     return id;
   }
 
-  // async getUsersByUsername(username) {
-  //   const query = {
-  //     text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
-  //     values: [`%${username}%`],
-  //   };
-  //   const result = await this._pool.query(query);
-  //   return result.rows;
-  // }
+  async getUsersByUsername(username) {
+    const query = {
+      text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
+      values: [`%${username}%`],
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = UsersServices;
