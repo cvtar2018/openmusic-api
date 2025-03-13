@@ -72,10 +72,6 @@ class PlaylistsService {
   }
 
   async getPlaylistById(playlistId) {
-    // await this.checkPlaylistExist(playlistId);
-
-    // await this.verifyPlaylistOwner(playlistId, credentialId);
-
     const playlistQuery = {
       text: `SELECT playlists.id, playlists.name, users.username
             FROM playlists
