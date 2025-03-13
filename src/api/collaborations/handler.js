@@ -50,7 +50,7 @@ class CollaborationsHandler {
 
     return {
       status: 'success',
-      message: 'KOlaborasi berhasil dihapus',
+      message: 'Kolaborasi berhasil dihapus',
     };
   }
 }
