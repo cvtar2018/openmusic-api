@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
@@ -9,20 +8,11 @@ exports.shorthands = undefined;
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-exports.up = (pgm) => {
-  pgm.addColumn('albums', {
-    cover_url: {
-      type: 'VARCHAR(255)',
-      default: null,
-    },
-  });
-};
+exports.up = (pgm) => {};
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-exports.down = (pgm) => {
-  pgm.dropColumn('albums', 'cover_url');
-};
+exports.down = (pgm) => {};
