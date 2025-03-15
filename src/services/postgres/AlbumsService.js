@@ -49,6 +49,7 @@ class AlbumsService {
       id: album.id,
       name: album.name,
       year: album.year,
+      coverUrl: album.cover_url,
       songs: songs,
     };
 
@@ -78,6 +79,20 @@ class AlbumsService {
 
     if (!result.rows.length) {
       throw new NotFoundError('Failed to delete. Album ID was not found');
+    }
+  }
+
+  async editAlbumCover(albumId, coverUrl) {
+    const query = {
+      text: 'UPDATE albums SET cover_url = $1 WHERE id = $2 RETURNING id',
+      values: [coverUrl, albumId],
+    };
+
+    console.log(albumId);
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Failed to update. Album Id was not found gaes');
     }
   }
 }
