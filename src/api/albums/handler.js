@@ -1,9 +1,10 @@
 const autoBind = require('auto-bind');
 
 class AlbumsHandler {
-  constructor(service, validator) {
+  constructor(service, validator, usersService) {
     this._service = service;
     this._validator = validator;
+    this._usersService = usersService;
 
     autoBind(this);
   }
@@ -56,6 +57,51 @@ class AlbumsHandler {
     return {
       status: 'success',
       message: 'Album has been deleted',
+    };
+  }
+
+  // likes
+  async postAlbumLikeHandler(request, h) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+    console.log(albumId);
+
+    await this._service.checkAlbumExist(albumId);
+
+    await this._service.checkAlbumLikeExist(albumId, userId);
+
+    await this._service.addAlbumLike(albumId, userId);
+
+    const response = h.response({
+      status: 'success',
+      message: 'berhasil like',
+    });
+    response.code(201);
+    return response;
+  }
+
+  async getAlbumLikesHandler(request) {
+    const { id: albumId } = request.params;
+
+    const number = await this._service.getAlbumLikes(albumId);
+
+    return {
+      status: 'success',
+      data: {
+        likes: number,
+      },
+    };
+  }
+
+  async deleteAlbumLikeHandler(request) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+
+    await this._service.deleteAlbumLike(albumId, userId);
+
+    return {
+      status: 'success',
+      message: 'berhasil dislike',
     };
   }
 }
