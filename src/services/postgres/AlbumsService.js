@@ -26,6 +26,21 @@ class AlbumsService {
     return result.rows[0].id;
   }
 
+  async checkAlbumExist(albumId) {
+    const albumQuery = {
+      text: 'SELECT * FROM albums WHERE id = $1',
+      values: [albumId],
+    };
+
+    const albumResult = await this._pool.query(albumQuery);
+
+    if (!albumResult.rows.length) {
+      throw new NotFoundError('Album was not found');
+    }
+
+    return albumResult.rows[0];
+  }
+
   async getAlbumById(id) {
     const albumQuery = {
       text: 'SELECT * FROM albums WHERE id = $1',
@@ -33,10 +48,13 @@ class AlbumsService {
     };
 
     const albumResult = await this._pool.query(albumQuery);
-    const album = albumResult.rows[0];
-    if (!album) {
-      throw new NotFoundError('Album id was not found');
+
+    // console.log(albumResult);
+
+    if (!albumResult.rows.length) {
+      throw new NotFoundError('Album was not found');
     }
+    const album = albumResult.rows[0];
 
     const songQuery = {
       text: 'SELECT id, title, performer FROM songs WHERE album_id = $1',
@@ -94,6 +112,63 @@ class AlbumsService {
     if (!result.rows.length) {
       throw new NotFoundError('Failed to update. Album Id was not found gaes');
     }
+  }
+
+  async checkAlbumLikeExist(albumId, userId) {
+    const query = {
+      text: 'SELECT * FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+      values: [userId, albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (result.rows.length) {
+      throw new InvariantError('User already like this album');
+    }
+  }
+  async addAlbumLike(albumId, userId) {
+    const id = `likes-${nanoid(16)}`;
+    console.log(albumId, userId);
+    const query = {
+      text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
+      values: [id, userId, albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows[0].id) {
+      throw new InvariantError();
+    }
+
+    return result.rows[0];
+  }
+
+  async deleteAlbumLike(albumId, userId) {
+    console.log(albumId, userId);
+    const query = {
+      text: 'DELETE FROM user_album_likes WHERE album_id = $1 AND user_id = $2 RETURNING id',
+      values: [albumId, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Gagal menghapus like. Like Id tidak ditemukan');
+    }
+  }
+
+  async getAlbumLikes(albumId) {
+    console.log(albumId);
+    const query = {
+      text: 'SELECT * FROM user_album_likes WHERE album_id = $1',
+      values: [albumId],
+    };
+
+    const result = await this._pool.query(query);
+
+    console.log(result.rows);
+
+    return result.rows.length;
   }
 }
 
