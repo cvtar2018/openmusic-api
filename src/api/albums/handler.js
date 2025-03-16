@@ -80,10 +80,21 @@ class AlbumsHandler {
     return response;
   }
 
-  async getAlbumLikesHandler(request) {
+  async getAlbumLikesHandler(request, h) {
     const { id: albumId } = request.params;
 
     const number = await this._service.getAlbumLikes(albumId);
+
+    if (number.source === 'cache') {
+      const result = {
+        status: 'success',
+        data: {
+          likes: number.likes,
+        },
+      };
+
+      return h.response(result).header('X-Data-Source', number.source);
+    }
 
     return {
       status: 'success',
