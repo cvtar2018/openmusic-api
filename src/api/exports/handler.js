@@ -12,13 +12,15 @@ class ExportsHandler {
 
   async postExportPlaylistHandler(request, h) {
     this._validator.validateExportPlaylistPayload(request.payload);
-    const { playlistId } = request.params;
+    const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
 
     const message = {
       playlistId: playlistId,
       targetEmail: request.payload.targetEmail,
     };
+
+    console.log(message.targetEmail);
 
     await this._playlistsService.checkPlaylistExist(playlistId);
 
